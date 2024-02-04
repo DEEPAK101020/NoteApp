@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>notes</title>
+  </head>
+  <body>
+    <div>
+        <h2>Add new Notes</h2>
+        Your Title:<input type="text" id="inputTitle" placeholder="Title of the note">
+        Discription: <input type="text"  id="inputdis" placeholder=" body Discription">
+        <button id="addnotes">Add new notes</button>
+        <!-- <h2>update Notes</h2>
+        Your Title:<input type="text" id="inputTitle" placeholder="Title of the note">
+        Discription: <input type="text"  id="inputdis" placeholder=" body Discription"> -->
+        <button id="updatenotes">update notes</button>
+
+    </div>
+    
+    <div id="note-card-list"></div>
+
+
+    <script>
+        const inputTitle=document.getElementById("inputTitle");
+        const inputbody=document.getElementById("inputdis");
+        const addnotes=document.getElementById("addnotes");
+
+        addnotes.addEventListener("click",()=>{
+            let details={
+                Title:inputTitle.value,
+                body:inputbody.value
+            }
+            fetch("http://localhost:5000/note/create",{
+                method:"POST",
+                headers:{"Content-type":"application/json",authorization: `Bearer ${localStorage.getItem("token")}`},
+                body:JSON.stringify(details)
+            }).then(res=>res.json())
+            .then((data)=>{console.log(data);
+                window.location.reload()})
+            .catch(err=>console.log(errr))
+        })
+
+  let currentitem;
+
+      function displayNotes(data) {
+        const noteList = document.getElementById("note-card-list");
+        const notes = data.foundID;
+
+        notes.forEach((note) => {
+          const noteCard = document.createElement("div");
+          noteCard.classList.add("note-card");
+
+          const title = document.createElement("h3");
+          title.innerText = note.Title;
+
+          const content = document.createElement("p");
+          content.innerText = note.body;
+
+          const editBtn = document.createElement("button");
+          editBtn.className = "btn1";
+          editBtn.innerText = "Edit";
+
+         
+
+          editBtn.addEventListener("click", () => {
+            // openEditModel(foundID._id, foundID.Title, foundID.body);
+            inputTitle.value=note.Title;
+            inputbody.value=note.body;
+            currentitem=note;
+            openEditModel(note)
+          });
+
+          const deleteBtn = document.createElement("button");
+          deleteBtn.className = "btn1";
+          deleteBtn.innerText = "Delete";
+          deleteBtn.addEventListener("click", () => {
+            deleteNote(note._id);
+          });
+
+          noteCard.append(title, content, editBtn, deleteBtn);
+
+          noteList.appendChild(noteCard);
+        });
+      }
+
+
+
+      function renderdata() {
+        fetch("http://localhost:5000/note/", {
+          // method:"GET",
+          headers: {
+            "Content-type": "application/json",
+            authorization: `Bearer ${localStorage.getItem("token")}`,
+          }
+
+          // body:
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            console.log(data);
+            displayNotes(data);
+          })
+          .catch((err) => err);
+      }
+      renderdata();
+
+    //   openEditModel(id,)
+
+      function deleteNote(id){
+        fetch(`http://localhost:5000/note/delete/${id}`,
+        {
+            method:"DELETE",
+            headers:{
+                "Content-type":"application/json",authorization: `Bearer ${localStorage.getItem("token")}`
+            }
+        }).then(res=>res.json())
+        .then((data)=>{
+            console.log(data)
+        window.location.reload()})
+        .catch(err=>err)
+      }
+      //update
+function openEditModel(item){
+  inputTitle.value=item.Title,
+  inputbody.value=item.body
+  currentitem=item;
+}
+
+      const updatebtn=document.getElementById("updatenotes")
+      updatebtn.addEventListener("click",(e)=>{
+        e.preventDefault();
+        updatenote(currentitem)
+      })
+        function updatenote(item){
+          fetch(`http://localhost:5000/note/update/${item._id}`,
+        {
+            method:"PATCH",
+            headers:{
+                "Content-type":"application/json",authorization: `Bearer ${localStorage.getItem("token")}`
+            },body:JSON.stringify({
+              Title:inputTitle.value,
+              body:inputbody.value
+            })
+        }).then(res=>res.json())
+        .then((data)=>{
+            console.log(data)
+        window.location.reload()})
+        .catch(err=>err)
+      }
+
+      
+
+    </script>
+  </body>
+</html>
